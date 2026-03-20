@@ -1,0 +1,72 @@
+appId: com.novelforge.app
+productName: NovelForge
+
+directories:
+  buildResources: build
+  output: release
+
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron/*'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+
+# better-sqlite3 是原生模块，需要包含编译后的 .node 文件
+asarUnpack:
+  - 'node_modules/better-sqlite3/**'
+
+# ==========================================
+# Windows 配置
+# ==========================================
+win:
+  executableName: NovelForge
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  artifactName: NovelForge-${version}-Setup.${ext}
+  shortcutName: NovelForge
+  uninstallDisplayName: NovelForge
+  createDesktopShortcut: always
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+portable:
+  artifactName: NovelForge-${version}-Portable.${ext}
+
+# ==========================================
+# Linux 配置
+# ==========================================
+linux:
+  executableName: novelforge
+  target:
+    - target: AppImage
+      arch: [x64, arm64]
+  category: Office
+  desktop:
+    Name: NovelForge
+    Comment: 网文创作工具
+    Categories: Office;TextEditor;
+
+appImage:
+  artifactName: NovelForge-${version}-${arch}.${ext}
+
+# ==========================================
+# macOS 配置（可选，未来扩展）
+# ==========================================
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  category: public.app-category.productivity
+
+# ==========================================
+# 额外资源
+# ==========================================
+extraResources:
+  - from: './resources/'
+    to: '.'
