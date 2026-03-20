@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS characters (
   name TEXT NOT NULL,
   description TEXT DEFAULT '',
   avatar_path TEXT DEFAULT NULL,
+  is_deleted INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now', 'localtime')),
   updated_at TEXT DEFAULT (datetime('now', 'localtime'))
 );
@@ -141,6 +142,7 @@ CREATE TABLE IF NOT EXISTS events (
   month INTEGER DEFAULT NULL,
   day INTEGER DEFAULT NULL,
   sort_order INTEGER DEFAULT 0,
+  is_deleted INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now', 'localtime')),
   FOREIGN KEY (timeline_id) REFERENCES timelines(id) ON DELETE SET NULL
 );
@@ -218,6 +220,7 @@ CREATE TABLE IF NOT EXISTS chapters (
   outline TEXT DEFAULT '',
   content TEXT DEFAULT '{}',
   sort_order INTEGER DEFAULT 0,
+  is_deleted INTEGER DEFAULT 0,
   FOREIGN KEY (volume_id) REFERENCES volumes(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_chapters_volume ON chapters(volume_id);
