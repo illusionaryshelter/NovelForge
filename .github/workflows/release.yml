@@ -1,0 +1,100 @@
+# GitHub Actions - 跨平台自动打包 & 发布
+#
+# 触发条件：推送 v* 标签时自动构建 Windows + Linux 包并上传到 GitHub Release
+# 用法：
+#   git tag v0.1.0
+#   git push origin v0.1.0
+#
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            args: '--linux'
+          - os: windows-latest
+            platform: win
+            args: '--win'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Electron app
+        run: npm run build
+
+      - name: Package for ${{ matrix.platform }}
+        run: npx electron-builder ${{ matrix.args }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}
+          path: |
+            release/*.AppImage
+            release/*.exe
+            release/*.yml
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find artifacts -type f | head -20
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: NovelForge ${{ github.ref_name }}
+          body: |
+            ## NovelForge ${{ github.ref_name }}
+
+            ### 下载说明
+
+            | 平台 | 文件 | 说明 |
+            |------|------|------|
+            | **Windows** | `*-Setup.exe` | 安装版（推荐） |
+            | **Windows** | `*-Portable.exe` | 便携版（免安装） |
+            | **Linux x64** | `*-x86_64.AppImage` | 双击即运行 |
+
+            > Linux 用户需先执行 `chmod +x *.AppImage` 赋予执行权限
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/*.AppImage
+            artifacts/**/*.exe
+            artifacts/**/*.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
