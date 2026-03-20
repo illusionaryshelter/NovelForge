@@ -78,6 +78,7 @@ function createWindow(): void {
     minHeight: 680,
     show: false,
     title: 'NovelForge - 网文创作工具',
+    icon: join(__dirname, '../../build/icon.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
